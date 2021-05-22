@@ -114,8 +114,12 @@ def process_file(file_name):
 
     # Time of file
     barks['time'] = file_info["datatime"].strftime("%H:%M:%S")
+    
     #
     barks['bark_chart']=''
+
+    # Bark list offset, in seconds
+    barks['bark_list_offset_seconds'] = []
     
     print("file: "+file_name)
     # Time offset of segment
@@ -136,27 +140,28 @@ def process_file(file_name):
         barked = False
         # Make a prediction. We don't care about it unless it's a bark.
         prediction=int(return_prediction((audio_segment, sample_rate))["probabilities"]["dog_bark"]*100)
-
+        '''
         if random.randint(0,40) == 10:
             sd.play(audio_segment, sample_rate)
             print('*',end='')
+        '''
         # If it's a bark
         if prediction > 75:
             #print(f'{len(audio_segment)/sample_rate+offset} seconds \nDog barking percentage: %',prediction,'\n\n')
-            print('0',end='')
-            barks['bark_chart']+='0'
+            print('1',end='')
+            barks['bark_chart']+='1'
             barked = True
             # Time of bark
             time = offset
             # time = file_info["datatime"] + datetime.timedelta(seconds=offset)
             barks['bark_list_offset_seconds'] += [offset] #[time.strftime('%H:%M:%S')]
         else:
-            print('1', end='')
-            barks['bark_chart'] += '1'
+            print('0', end='')
+            barks['bark_chart'] += '0'
         # Add the length of the segment to the offset
         offset += len(audio_segment)/sample_rate
     # Count up the barks
-    barks['bark_count'] = len(barks['bark_list'])
+    barks['bark_count'] = len(barks['bark_list_offset_seconds'])
     return barks
 
 def get_file_info(file_name):
@@ -169,6 +174,8 @@ def get_file_info(file_name):
 def main():
     # Look in ./detect/
     for file in os.listdir('detect'):
+        if file == ".gitignore":
+            continue
         # Get the bark
         barks = process_file(file)
         # Move to the processed folder
@@ -176,7 +183,7 @@ def main():
         # Write the results to a JSON file
         with open("results/"+file.split('.')[0]+".json",'x') as FILE:
             json.dump(barks, FILE)
-        print(f"\n{file} processed! {len(barks['bark_list'])} barks")
+        print(f"\n{file} processed! {len(barks['bark_count'])} barks")
 if __name__ == '__main__':
     main()
     barkcharts.main()

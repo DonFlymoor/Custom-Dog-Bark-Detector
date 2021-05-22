@@ -157,7 +157,7 @@ def draw_circle(surface, x, y, radius, color):
     gfxdraw.filled_circle(surface, x, y, radius, color)
     
 def main():
-    files = [file_name for file_name in os.listdir('results') if '.png' not in file_name]
+    files = [file_name for file_name in os.listdir('results') if ( '.png' not in file_name and filename is not '.gitignore') ]
     #files = ['bark.json']
     pygame_plot(files)
     '''
