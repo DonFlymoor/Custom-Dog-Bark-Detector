@@ -17,7 +17,7 @@ import warnings
 import random
 import sounddevice as sd
 
-import barkcharts
+#import barkcharts
 warnings.filterwarnings("ignore")
 #region = os.environ['AWS_DEFAULT_REGION']
 #table_name = os.environ['TABLE_NAME']
@@ -172,18 +172,35 @@ def get_file_info(file_name):
     return {"datatime":_time}
 
 def main():
-    # Look in ./detect/
-    for file in os.listdir('detect'):
-        if file == ".gitignore":
+    # Look in detect_dir
+    detect_dir = input('Where are the files you want to detect barks from?')
+    try:
+        with open(detect_dir+"/detected.json",'r') as FILE:
+            files = json.load(FILE)
+    except:
+        with open(detect_dir+"/detected.json",'x') as FILE:
+            json.dump([],FILE)
+            files = []
+    for file in os.listdir(detect_dir):
+        if '.mp3' not in file.lower():
+            continue
+        if file in files:
             continue
         # Get the bark
         barks = process_file(file)
-        # Move to the processed folder
-        os.rename("detect/"+file, "detected/"+file)
+        try:
+            with open(detect_dir+"/detected.json",'x') as FILE:
+                json.dump([file],FILE)
+        except:
+            with open(detect_dir+"/detected.json",'r') as FILE:
+                files = json.load(FILE)
+                files += [file]
+            with open(detect_dir+"/detected.json",'w') as FILE:
+                json.dump(files,FILE)
         # Write the results to a JSON file
         with open("results/"+file.split('.')[0]+".json",'x') as FILE:
             json.dump(barks, FILE)
-        print(f"\n{file} processed! {len(barks['bark_count'])} barks")
+        print(f"\n{file} processed! {barks['bark_count']} barks")
 if __name__ == '__main__':
     main()
-    barkcharts.main()
+    #barkcharts.main()
